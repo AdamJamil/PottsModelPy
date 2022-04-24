@@ -34,8 +34,22 @@ def add_REsum(f: RESum, g: RESum) -> RESum:
     return f
 
 
+def mult_REsum(f: RESum, g: RESum) -> RESum:
+    _f = cp(f)
+    f.clear()
+    for i, (f_num, f_denom) in enumerate(_f):
+        temp = cp(g)
+        for g_num, g_denom in temp:
+            mult_poly(g_num, f_num)
+            mult_poly(g_denom, f_denom)
+        add_REsum(f, temp)
+    return f
+
+
 def gcd(a: int, b: int):
-    return gcd(b, a % b) if b else a
+    while b:
+        a, b = b, a % b
+    return a
 
 
 def simplify_rational(a: Rational) -> Rational:
@@ -49,6 +63,10 @@ def mult_rational(a: Rational, b: Rational) -> Rational:
     a[0] *= b[0]
     a[1] *= b[1]
     return simplify_rational(a)
+
+
+def divide_rational(a: Rational, b: Rational) -> Rational:
+    return mult_rational(a, [b[1], b[0]])
 
 
 def add_rational(a: Rational, b: Rational) -> Rational:
@@ -102,3 +120,26 @@ def fmt_rat_fun(f: RationalFunc) -> str:
 
 def fmt_REsum(f: RESum) -> str:
     return " + ".join(f"{fmt_rat_fun(rat_fun)}" for rat_fun in f if rat_fun != zero_rat_func) or "0"
+
+
+def evaluate_poly_at_rat(f: Polynomial, x: Rational) -> Rational:
+    res = cp(zero_rational)
+    for coeff in reversed(f):
+        add_rational(res, coeff)
+        mult_rational(res, x)
+    return res
+
+
+def evaluate_rat_fun_at_rat(f: RationalFunc, x: Rational) -> Rational:
+    return divide_rational(evaluate_poly_at_rat(f[0], x), evaluate_poly_at_rat(f[1], x))
+
+
+def evaluate_REsum_at_rat(f: RESum, x: Rational) -> Rational:
+    res = cp(zero_rational)
+    for rat_fun in f:
+        add_rational(res, evaluate_rat_fun_at_rat(rat_fun, x))
+    return res
+
+
+def compare_rational(a: Rational, b: Rational) -> int:
+    return -1 if a[0] * b[1] < a[1] * b[0] else 0 if a[0] * b[1] == a[1] * b[0] else 1
