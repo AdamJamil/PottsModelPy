@@ -8,20 +8,26 @@ from states import get_states
 from test import TestExpression
 from partial_ordering import *
 from functools import reduce
+from poly_utils import *
 
 
 def main():
-    TestExpression()
+    x = Gam()
+    x *= 4
+    print(x)
+    # TestExpression()
 
-    print(get_states(3))
-    for row in generate_transition_matrix(3):
-        print(" | ".join(fmt_REsum(f) for f in row))
-    for row in generate_transition_matrix(3):
-        print(fmt_REsum(reduce(add_REsum, row)))
+    # print(yun_factorization([one_rational, [2, 1], one_rational]))
 
-    print("\n".join(map(str, get_max_partial_ordering(3))))
+    # print(get_states(3))
+    # for row in generate_transition_matrix(3):
+    #     print(" | ".join(fmt_REsum(f) for f in row))
+    # for row in generate_transition_matrix(3):
+    #     print(fmt_REsum(reduce(add_REsum, row)))
+    #
+    # print("\n".join(map(str, get_max_partial_ordering(3))))
 
-    TestExpression()
+    # TestExpression()
 
 if __name__ == "__main__":
     main()
