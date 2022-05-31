@@ -12,5 +12,3 @@ def get_states(n: int) -> List[State]:
                 continue
             states.append((blue, stars, daggers))
     return [*reversed(sorted(states))]
-
-# amongus file
