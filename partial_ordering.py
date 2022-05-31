@@ -1,7 +1,7 @@
 from random import random
 from typing import List
 from matrix_utils import *
-from expression import *
+from re_sum import *
 
 
 def is_partial_ordering(r: List[List[int]]) -> bool:
@@ -16,18 +16,18 @@ def get_max_partial_ordering(n: int) -> List[List[int]]:
     A = generate_transition_matrix(n)
     s = len(A)
     r = [[True] * s for _ in range(s)]
-    lambd, alpha = 1, 1.05
-    while lambd <= 10:
-        print(lambd)
-        lambd *= alpha
-        A_eval = evaluate_matrix_at_rational(A, [int(lambd * 100000), 100000])
-        A_expo = cp(A_eval)
-        for _ in range(20):
-            for x in range(s):
-                for y in range(s):
-                    if compare_rational(A_expo[x][0], A_expo[y][0]) < 0:
-                        r[x][y] = False
-            A_expo = mult_matrix(A_expo, A_eval, add=add_rational, mult=mult_rational, add_id=zero_rational)
+    A_expo = cp(A)
+    for _ in range(3):
+        # print(A_expo)
+        for i in range(s):
+            for j in range(s):
+                if r[j][i] and (A_expo[i][0] - A_expo[j][0]).sum_terms().f.pos_above_1():
+                    r[j][i] = False
+        print("start mult")
+        import time
+        start = time.perf_counter_ns()
+        A_expo = mult_matrix(A_expo, A, add_id=zero_REsum)
+        print((time.perf_counter_ns() - start) / 1000000000)
     print("\n".join(map(str, r)))
-    assert is_partial_ordering(r)
+    # assert is_partial_ordering(r)
     return r
