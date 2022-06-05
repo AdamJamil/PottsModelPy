@@ -1,10 +1,6 @@
 from copy import deepcopy as cp
 
-from rational import zero_rational, one_rational, Rational
-from polynomial import zero_poly, one_poly, Polynomial
-from rational_func import zero_rat_func, one_rat_func, RationalFunc
-from re_sum import zero_REsum, one_REsum, RESum
-
+from exprs import *
 
 class TestExpression:
     def __init__(self):

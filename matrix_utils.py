@@ -1,8 +1,7 @@
 from typing import List, TypeVar, Optional, Callable
-from polynomial import Polynomial
-
-from re_sum import *
 from states import get_states
+from exprs import zero_REsum, zero_poly, Polynomial, RationalFunc, Rational, RESum
+from copy import deepcopy as cp
 
 
 def generate_transition_matrix(n: int) -> List[List[RESum]]:

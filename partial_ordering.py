@@ -1,11 +1,13 @@
 from random import random
 from typing import List
 from matrix_utils import *
-from re_sum import *
 import time
+from exprs import zero_REsum
+
+from copy import deepcopy as cp
 
 
-def is_partial_ordering(r: List[List[int]]) -> bool:
+def is_partial_ordering(r: List[List[bool]]) -> bool:
     n = len(r)
     reflexive = all(r[i][i] for i in range(n))
     antisymmetric = all(r[i][j] != r[j][i] for i in range(n) for j in range(n) if i != j)
@@ -13,7 +15,7 @@ def is_partial_ordering(r: List[List[int]]) -> bool:
     return reflexive and antisymmetric and transitive
 
 
-def get_max_partial_ordering(n: int) -> List[List[int]]:
+def get_max_partial_ordering(n: int) -> List[List[bool]]:
     '''
     Implement algo 4.11 - Find Maximal Partial Ordering
 
@@ -23,7 +25,7 @@ def get_max_partial_ordering(n: int) -> List[List[int]]:
     s = len(A)
     r = [[True] * s for _ in range(s)] # Why is the datatype wrong ???
     A_expo = cp(A)
-    for _ in range(3):
+    for _ in range(2): # TODO: Why only 3 steps?
         # print(A_expo)
         for i in range(s):
             for j in range(s):

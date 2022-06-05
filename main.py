@@ -5,13 +5,14 @@
 # from expression import *
 from matrix_utils import generate_transition_matrix
 from states import get_states
-from polynomial import Polynomial
-from re_sum import zero_REsum
+
+import exprs
+from exprs import RESum, RationalFunc, Polynomial, Rational, one_REsum, zero_REsum
+
 from test import TestExpression
 from partial_ordering import get_max_partial_ordering
 # from functools import reduce
 # from poly_utils import *
-from rational import *
 
 def main():
     # TestExpression()
@@ -33,15 +34,13 @@ def main():
     pr.dump_stats(filename)
     # print("\n".join(map(str, get_max_partial_ordering(6))))
 
-    import expr_utils
-    expr_utils.print_timing_breakdown()
 
     TestExpression()
 
 
 
 def play_with_funcs():
-    my_rat_sum = re_sum.RESum([
+    my_rat_sum = RESum([
         RationalFunc(
             Polynomial([1]), 
             Polynomial([0, 1])
@@ -69,9 +68,9 @@ def play_with_funcs():
 
     my_rat_sum += Rational(4, 24)
 
-    zero_re = re_sum.zero_REsum
+    zero_re = zero_REsum
     print(zero_re)
-    two_re = re_sum.one_REsum + re_sum.one_REsum
+    two_re = one_REsum + one_REsum
     print(two_re)
     two_re.simplify()
     print(two_re)
