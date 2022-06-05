@@ -2,7 +2,7 @@ from random import random
 from typing import List
 from matrix_utils import *
 import time
-from exprs import zero_REsum
+from exprs import ZERO_RESUM
 
 from copy import deepcopy as cp
 
@@ -33,7 +33,7 @@ def get_max_partial_ordering(n: int) -> List[List[bool]]:
                     r[j][i] = False
         print("start mult")
         start = time.perf_counter_ns()
-        A_expo = mult_matrix(A_expo, A, add_id=zero_REsum)
+        A_expo = mult_matrix(A_expo, A, add_id=ZERO_RESUM)
         print((time.perf_counter_ns() - start) / 1000000000)
     print("\n".join(map(str, r)))
     # assert is_partial_ordering(r)

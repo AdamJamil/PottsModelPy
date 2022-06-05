@@ -42,6 +42,8 @@ from copy import deepcopy as cp
 import json
 import time
 
+import dumm
+
 
 
 
@@ -78,7 +80,7 @@ def cast_up(x: Any, target_type: Type, read_only: bool=False) -> Any:
         elif curr_type == "Rational":
             x = Polynomial([x])
         elif curr_type == "Polynomial":
-            x = RationalFunc(x, cp(one_poly))
+            x = RationalFunc(x, new_one_poly())
         elif isinstance(x, RationalFunc):
             x = RESum([x])
         elif target_type == RESum:
@@ -121,7 +123,7 @@ class Rational:
         self.p, self.q = self.p // g, self.q // g
 
     def __add__(self, other: RAT_T) -> Rational:
-        return cp(self).__iadd__(other)
+        return Rational(self.p, self.q).__iadd__(other)
 
     def __iadd__(self, other: RAT_T) -> Rational:
         other = cast_up(other, Rational, read_only=True)
@@ -131,13 +133,13 @@ class Rational:
         return self
 
     def __sub__(self, other: RAT_T) -> Rational:
-        return cp(self).__isub__(other)
+        return Rational(self.p, self.q).__isub__(other)
 
     def __isub__(self, other: RAT_T) -> Rational:
         return self.__iadd__(other * -1)
 
     def __mul__(self, other: RAT_T) -> Rational:
-        return cp(self).__imul__(other)
+        return Rational(self.p, self.q).__imul__(other)
 
     def __imul__(self, other: RAT_T) -> Rational:
         if not isinstance(other, _RAT_T):
@@ -189,8 +191,15 @@ class Rational:
     def __deepcopy__(self, memodict={}):
         return Rational(self.p, self.q)
 
-zero_rational = Rational(0, 1)
-one_rational = Rational(1, 1)
+
+def new_zero_rational() -> Rational:
+    return Rational(0, 1)
+
+def new_one_rational() -> Rational:
+    return Rational(1, 1)
+
+ZERO_RATIONAL = new_zero_rational()
+ONE_RATIONAL = new_one_rational()
 
 RAT_T = Union[Rational, int]
 _RAT_T = Rational, int
@@ -234,7 +243,7 @@ class Polynomial:
 
     def _shift(self, n: int) -> Polynomial:
         """Multiply by x^n"""
-        self.a = [cp(zero_rational) for _ in range(n)] + self.a
+        self.a = [new_zero_rational() for _ in range(n)] + self.a
         return self
 
     def _get_monic(self) -> Polynomial:
@@ -248,7 +257,7 @@ class Polynomial:
             self[0] += other
         elif isinstance(other, Polynomial):
             while len(self.a) < len(other.a):
-                self.a.append(cp(zero_rational))
+                self.a.append(new_zero_rational())
             for self_coeff, other_coeff in zip(self, other):
                 self_coeff += other_coeff
         else:
@@ -267,22 +276,22 @@ class Polynomial:
 
     def __imul__(self, other: POLY_T) -> Polynomial:
         if isinstance(other, _RAT_T):
-            for coeff in self:
-                coeff *= other
+        for coeff in self:
+            coeff *= other
         elif isinstance(other, Polynomial):
-            if other is self:
-                other = cp(self)
+        if other is self:
+            other = cp(self)
             old_self = cp(self)
             self.a.clear()
-            res = []
-            for new_deg in range(len(old_self) + len(other) - 1):
+        res = []
+        for new_deg in range(len(old_self) + len(other) - 1):
                 res.append(cp(zero_rational))
-                for pos_1, self_coeff in enumerate(old_self):
-                    if new_deg - pos_1 < 0:
-                        break
-                    if new_deg - pos_1 < len(other):
-                        res[-1] += self_coeff * other[new_deg - pos_1]
-            self.a = res
+            for pos_1, self_coeff in enumerate(old_self):
+                if new_deg - pos_1 < 0:
+                    break
+                if new_deg - pos_1 < len(other):
+                    res[-1] += self_coeff * other[new_deg - pos_1]
+        self.a = res
         else:
             raise NotImplementedError()
         return self
@@ -293,7 +302,7 @@ class Polynomial:
         while len(a) >= len(b):
             if len(a) == len(b) == 1 and a[0].p == 0:
                 break
-            temp = cp(one_poly)  # record multiple of b to subtract from a
+            temp = new_one_poly()  # record multiple of b to subtract from a
             temp *= a[-1] // b[-1]  # replace leading coeff of b with leading coeff of a
             temp._shift(len(a) - len(b))  # bump up degree
             q += temp  # add to quotient
@@ -308,7 +317,7 @@ class Polynomial:
         return self.__divmod__(other)[1]
 
     def __call__(self, x: RAT_T) -> Rational:
-        res = cp(zero_rational)
+        res = new_zero_rational()
         for coeff in reversed(self):
             res += coeff
             res *= x
@@ -329,7 +338,7 @@ class Polynomial:
     @staticmethod
     def monomial(n: int) -> Polynomial:
         """Returns x^n"""
-        return Polynomial([cp(zero_rational) for _ in range(n)] + [cp(one_rational)])
+        return Polynomial([new_zero_rational() for _ in range(n)] + [new_one_rational()])
 
     def __repr__(self) -> str:
         return str(self)
@@ -348,13 +357,13 @@ class Polynomial:
 
     def __eq__(self, o: Polynomial) -> bool:
         o = cast_up(o, Polynomial, read_only=True)
-        return isinstance(o, Polynomial) and (self - o).a == [zero_rational]
+        return isinstance(o, Polynomial) and (self - o).a == [ZERO_RATIONAL]
 
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__,  sort_keys=True, indent=4)
 
     def pos_above_1(self) -> bool:
-        if self == zero_poly:
+        if self == ZERO_POLY:
             return True
         return self(1) >= 0 and all(f.sq_fr_pos_above_1() for f in self.yun_factorization())
 
@@ -383,7 +392,7 @@ class Polynomial:
             if f(b) == 0:  # edge case
                 # we want our root to be in (a, b)
                 # we try to extend our interval by some r = 2^-i, making sure to disinclude any higher root
-                r = cp(one_rational)
+                r = new_one_rational()
                 while f.unique_zeros_in_region(b,  b + r):
                     r //= 2
                 b += r
@@ -392,8 +401,8 @@ class Polynomial:
         return True
 
     def yun_factorization(self) -> List[Polynomial]:
-        if self == zero_poly:
-            raise TypeError("fuck you")
+        if self == ZERO_POLY:
+            raise TypeError("L + ratio")
         a = self.gcd(self.derivative())
         b = self // a
         c = self.derivative() // a
@@ -413,7 +422,7 @@ class Polynomial:
     def gcd(self, b: Polynomial) -> Polynomial:
         """Euclidean algorithm on polynomials"""
         a = self
-        while b != zero_poly:
+        while b != ZERO_POLY:
             a, b = b, a % b
         return a._get_monic()
 
@@ -433,12 +442,12 @@ class Polynomial:
         if self._sturm:
             return self._sturm
         ret = [cp(self), self.derivative()]
-        while ret[-1] != zero_poly:
+        while ret[-1] != ZERO_POLY:
             ret.append((ret[-2] % ret[-1]) * -1)
         return ret
 
     def derivative(self) -> Polynomial:
-        res = cp(zero_poly)
+        res = new_zero_poly()
         for i, coeff in enumerate(self):
             if i:
                 res += Polynomial.monomial(i - 1) * coeff * i
@@ -464,8 +473,14 @@ class Polynomial:
 class EmptyPoly(object):
     __slots__ = ["a", "_sturm"]
 
-zero_poly = Polynomial([0])
-one_poly = Polynomial([1])
+def new_zero_poly() -> Polynomial:
+    return Polynomial([0])
+
+def new_one_poly() -> Polynomial:
+    return Polynomial([1])
+
+ZERO_POLY = new_zero_poly()
+ONE_POLY = new_one_poly()
 
 POLY_T = Union[Polynomial, RAT_T]
 _POLY_T = Polynomial, *_RAT_T
@@ -495,14 +510,16 @@ class RationalFunc:
     def simplify(self) -> None:
         """Simplify both f and g"""
         self.f.simplify()
-        if self.f == zero_poly:
-            self.g = cp(one_poly)
+        if self.f == ZERO_POLY:
+            self.g = new_one_poly()
         else:
             self.g.simplify()
 
     def __add__(self, other: RF_T) -> RationalFunc:
-        other = cast_up(other, RationalFunc, read_only=True)
+        # other = cast_up(other, RationalFunc, read_only=True)
+        other = dumm.do_cast_up(other, RationalFunc, True)
         res = cp(self)
+        # TODO: Quantify how often the denominators are actually the same
         res.f *= other.g
         res.f += other.f * res.g
         res.g *= other.g
@@ -537,7 +554,7 @@ class RationalFunc:
         return iter((self.f, self.g))
 
     def __str__(self) -> str:
-        return "/".join(f"[{str(poly)}]" for poly in self) if self.g != one_poly else str(self.f)
+        return "/".join(f"[{str(poly)}]" for poly in self) if self.g != ONE_POLY else str(self.f)
 
     def __eq__(self, o: RationalFunc) -> bool:
         if isinstance(o, int):
@@ -545,17 +562,25 @@ class RationalFunc:
         if isinstance(o, Rational):
             o = Polynomial([o])
         if isinstance(o, Polynomial):
-            o = RationalFunc(o, cp(one_poly))
+            o = RationalFunc(o, new_one_poly())
         return isinstance(o, RationalFunc) and self.f * o.g == self.g * o.f
 
     def __deepcopy__(self, memodict={}):
         return RationalFunc(cp(self.f), cp(self.g))
 
+
+
+def new_zero_rat_func() -> RationalFunc:
+    return RationalFunc(Polynomial([0]), Polynomial([1]))
+
+def new_one_rat_func() -> RationalFunc:
+    return RationalFunc(Polynomial([1]), Polynomial([1]))
+
+ZERO_RAT_FUNC = new_zero_rat_func()
+ONE_RAT_FUNC = new_one_rat_func()
+
 RF_T = Union[RationalFunc, POLY_T]
 _RF_T = RationalFunc, *_POLY_T
-
-zero_rat_func = RationalFunc(cp(zero_poly), cp(one_poly))
-one_rat_func = RationalFunc(cp(one_poly), cp(one_poly))
 
 
 
@@ -582,7 +607,8 @@ class RESum:
         self.simplify()
 
     def sum_terms(self) -> RationalFunc:
-        res = cp(zero_rat_func)
+        """Combines all expressions into a single rational func"""
+        res = new_zero_rat_func()
         for x in self:
             res += x
         return res
@@ -591,7 +617,7 @@ class RESum:
         """Pairs up equal denominators"""
         for i in reversed(range(len(self.a))):
             self.a[i].simplify()
-            if self.a[i].f == zero_poly:
+            if self.a[i].f == ZERO_POLY:
                 del self.a[i]
                 break
             for j in range(i):
@@ -619,7 +645,7 @@ class RESum:
         raise NotImplementedError()
 
     def __call__(self, x: RAT_T) -> Optional[Rational]:
-        res = cp(zero_rational)
+        res = new_zero_rational()
         for rat_fun in self:
             y = rat_fun(x)
             if y is None:
@@ -643,7 +669,7 @@ class RESum:
         return str(self)
 
     def __str__(self) -> str:
-        return " + ".join(f"{str(rat_fun)}" for rat_fun in self if rat_fun != zero_rat_func) or "0"
+        return " + ".join(f"{str(rat_fun)}" for rat_fun in self if rat_fun != ZERO_RAT_FUNC) or "0"
 
     def __eq__(self, o: RESum) -> bool:
         o = cast_up(o, RESum, read_only=True)
@@ -655,12 +681,29 @@ class RESum:
         res.__class__ = RESum
         return res
 
+
+
 class EmptyRESum(object):
     __slots__ = ["a"]
 
-zero_REsum = RESum([cp(zero_rat_func)])
-one_REsum = RESum([cp(one_rat_func)])
+def new_zero_resum() -> RESum:
+    return RESum([
+        RationalFunc(
+            Polynomial([0]),
+            Polynomial([1])
+        )
+    ])
 
+def new_one_resum() -> RESum:
+    return RESum([
+        RationalFunc(
+            Polynomial([1]),
+            Polynomial([1])
+        )
+    ])
+
+ZERO_RESUM = new_zero_resum()
+ONE_RESUM = new_one_resum()
 
 RES_T = Union[RF_T, RESum]
 _RES_T = *_RF_T, RESum

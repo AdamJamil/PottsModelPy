@@ -7,7 +7,7 @@ from matrix_utils import generate_transition_matrix
 from states import get_states
 
 import exprs
-from exprs import RESum, RationalFunc, Polynomial, Rational, one_REsum, zero_REsum
+from exprs import RESum, RationalFunc, Polynomial, Rational, ONE_RESUM, ZERO_RESUM
 
 from test import TestExpression
 from partial_ordering import get_max_partial_ordering
@@ -68,9 +68,9 @@ def play_with_funcs():
 
     my_rat_sum += Rational(4, 24)
 
-    zero_re = zero_REsum
+    zero_re = ZERO_RESUM
     print(zero_re)
-    two_re = one_REsum + one_REsum
+    two_re = ONE_RESUM + ONE_RESUM
     print(two_re)
     two_re.simplify()
     print(two_re)
