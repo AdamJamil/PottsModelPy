@@ -2,6 +2,7 @@ from random import random
 from typing import List
 from matrix_utils import *
 from re_sum import *
+import time
 
 
 def is_partial_ordering(r: List[List[int]]) -> bool:
@@ -13,9 +14,14 @@ def is_partial_ordering(r: List[List[int]]) -> bool:
 
 
 def get_max_partial_ordering(n: int) -> List[List[int]]:
+    '''
+    Implement algo 4.11 - Find Maximal Partial Ordering
+
+    param n is the size of the graph (for K_n, the complete graph)
+    '''
     A = generate_transition_matrix(n)
     s = len(A)
-    r = [[True] * s for _ in range(s)]
+    r = [[True] * s for _ in range(s)] # Why is the datatype wrong ???
     A_expo = cp(A)
     for _ in range(3):
         # print(A_expo)
@@ -24,7 +30,6 @@ def get_max_partial_ordering(n: int) -> List[List[int]]:
                 if r[j][i] and (A_expo[i][0] - A_expo[j][0]).sum_terms().f.pos_above_1():
                     r[j][i] = False
         print("start mult")
-        import time
         start = time.perf_counter_ns()
         A_expo = mult_matrix(A_expo, A, add_id=zero_REsum)
         print((time.perf_counter_ns() - start) / 1000000000)

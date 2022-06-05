@@ -12,7 +12,10 @@ import expr_utils
 
 
 class RESum:
-    """Sum of rational expressions"""
+    """
+    Sum of rational expressions, which are members of \\mathbb{Q}[x] but stored
+    as individual rationals for lazy computation.
+    """
     __slots__ = ["a"]
 
     def __init__(self, _a: Dict[Polynomial, Polynomial]) -> None:

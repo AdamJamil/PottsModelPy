@@ -53,6 +53,6 @@ def mult_matrix(A: List[List[T]], B: List[List[T]], add_id: Optional[T] = None):
                 start = time.perf_counter_ns()
                 C[i][k] += res
                 add_time += time.perf_counter_ns() - start
-    print(mul_time  / 1000000000)
-    print(add_time  / 1000000000)
+    print(f" > mat mul time: {mul_time  / 1_000_000_000}")
+    print(f" > mat add time: {add_time  / 1_000_000_000}")
     return C

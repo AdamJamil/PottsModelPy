@@ -7,7 +7,7 @@ from polynomial import POLY_T, _POLY_T, one_poly, zero_poly, Polynomial
 from rational import Rational, RAT_T
 
 class RationalFunc:
-    """Represents f/g, where f, g \\in \\mathbb{Q}"""
+    """Represents f/g, where f, g \\in \\mathbb{Q}[x]"""
     __slots__ = ["f", "g"]
 
     def __init__(self, _f: Polynomial, _g: Polynomial) -> None:
