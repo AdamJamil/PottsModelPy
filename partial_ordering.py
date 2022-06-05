@@ -1,10 +1,13 @@
 from random import random
 from typing import List
 from matrix_utils import *
-from re_sum import *
+import time
+from exprs import ZERO_RESUM
+
+from copy import deepcopy as cp
 
 
-def is_partial_ordering(r: List[List[int]]) -> bool:
+def is_partial_ordering(r: List[List[bool]]) -> bool:
     n = len(r)
     reflexive = all(r[i][i] for i in range(n))
     antisymmetric = all(r[i][j] != r[j][i] for i in range(n) for j in range(n) if i != j)
@@ -12,21 +15,25 @@ def is_partial_ordering(r: List[List[int]]) -> bool:
     return reflexive and antisymmetric and transitive
 
 
-def get_max_partial_ordering(n: int) -> List[List[int]]:
+def get_max_partial_ordering(n: int) -> List[List[bool]]:
+    '''
+    Implement algo 4.11 - Find Maximal Partial Ordering
+
+    param n is the size of the graph (for K_n, the complete graph)
+    '''
     A = generate_transition_matrix(n)
     s = len(A)
-    r = [[True] * s for _ in range(s)]
+    r = [[True] * s for _ in range(s)] # Why is the datatype wrong ???
     A_expo = cp(A)
-    for _ in range(3):
+    for _ in range(2): # TODO: Why only 3 steps?
         # print(A_expo)
         for i in range(s):
             for j in range(s):
                 if r[j][i] and (A_expo[i][0] - A_expo[j][0]).sum_terms().f.pos_above_1():
                     r[j][i] = False
         print("start mult")
-        import time
         start = time.perf_counter_ns()
-        A_expo = mult_matrix(A_expo, A, add_id=zero_REsum)
+        A_expo = mult_matrix(A_expo, A, add_id=ZERO_RESUM)
         print((time.perf_counter_ns() - start) / 1000000000)
     print("\n".join(map(str, r)))
     # assert is_partial_ordering(r)

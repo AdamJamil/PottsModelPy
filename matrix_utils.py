@@ -1,19 +1,19 @@
 from typing import List, TypeVar, Optional, Callable
-from polynomial import Polynomial
-
-from re_sum import *
 from states import get_states
+from exprs import new_zero_resum, new_zero_poly, Polynomial, RationalFunc, Rational, RESum
+from exprs import *
+from copy import deepcopy as cp
 
 
 def generate_transition_matrix(n: int) -> List[List[RESum]]:
     states = get_states(n)
     s = len(states)
-    A = [[cp(zero_REsum) for _ in range(s)] for _ in range(s)]
+    A = [[new_zero_resum() for _ in range(s)] for _ in range(s)]
     for idx_x, x in enumerate(states):
         for src in range(3):
             if not x[src]:
                 continue
-            tot = cp(zero_poly)
+            tot = new_zero_poly()
             for dst in range(3):
                 n_c = x[dst] - (src == dst)
                 tot += Polynomial.monomial(n_c)
@@ -48,11 +48,21 @@ def mult_matrix(A: List[List[T]], B: List[List[T]], add_id: Optional[T] = None):
         for j in range(p):
             for k in range(m):
                 start = time.perf_counter_ns()
-                res = A[i][j] * B[j][k]
+                # res = A[i][j] * B[j][k]
+                res = mult_terms(A[i][j], B[j][k])
                 mul_time += time.perf_counter_ns() - start
                 start = time.perf_counter_ns()
-                C[i][k] += res
+                # C[i][k] += res
+                add_to(C[i][k], res)
                 add_time += time.perf_counter_ns() - start
-    print(mul_time  / 1000000000)
-    print(add_time  / 1000000000)
+    print(f" > mat mul time: {mul_time  / 1_000_000_000}")
+    print(f" > mat add time: {add_time  / 1_000_000_000}")
     return C
+
+
+# These are added to be able to profile with cprofile
+def mult_terms (x, y):
+    return x * y
+
+def add_to(x, y):
+    x += y
