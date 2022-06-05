@@ -23,6 +23,7 @@ def main():
     #     for x in row:
     #         res += x
     #     print(str(res))
+
     import cProfile
     pr = cProfile.Profile()
     pr.enable()
@@ -31,6 +32,9 @@ def main():
     filename = 'profile.prof'  # You can change this if needed
     pr.dump_stats(filename)
     # print("\n".join(map(str, get_max_partial_ordering(6))))
+
+    import expr_utils
+    expr_utils.print_timing_breakdown()
 
     TestExpression()
 
