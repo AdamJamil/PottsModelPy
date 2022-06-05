@@ -34,5 +34,51 @@ def main():
 
     TestExpression()
 
+
+
+def play_with_funcs():
+    my_rat_sum = re_sum.RESum([
+        RationalFunc(
+            Polynomial([1]), 
+            Polynomial([0, 1])
+            ),
+        RationalFunc(
+            Polynomial([0, 0, 1]),
+            Polynomial([1, 1])
+            ),
+        RationalFunc(
+            Polynomial([0, 1, 2, 3]),
+            Polynomial([1, 1])
+        ),
+        RationalFunc(
+            Polynomial([1, 2, 3, 5]),
+            Polynomial([1])
+        )
+    ])
+
+    my_rat_sum += RationalFunc(
+        Polynomial([0, 2]),
+        Polynomial([0, 1])
+    )
+
+    my_rat_sum += Polynomial([0, 0, 4])
+
+    my_rat_sum += Rational(4, 24)
+
+    zero_re = re_sum.zero_REsum
+    print(zero_re)
+    two_re = re_sum.one_REsum + re_sum.one_REsum
+    print(two_re)
+    two_re.simplify()
+    print(two_re)
+
+    print(my_rat_sum)
+    my_rat_sum.simplify()
+    print(my_rat_sum)
+
+
+
+
+
 if __name__ == "__main__":
     main()
